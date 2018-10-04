@@ -77,9 +77,9 @@ describe NKnode do
     end
 
     it 'is possible to pass several vectors of state to the same node and get scores' do
-      states = 10.times.collect {10.times.collect {rand(10)}}
+      states = 10.times.collect {10.times.collect {rand()}}
       a = NKnode.new(0,[2,7])
-      states.each {|s| a.score(s)}
+      states.each {|s| a.score(s)} # update their scores tables
       expect(a.scores.keys.length).to eq 10
       expected_substates = states.collect {|s| [0,2,7].collect {|i| s[i]}}
       expect(expected_substates).to eq a.scores.keys
