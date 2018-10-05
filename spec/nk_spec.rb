@@ -86,3 +86,36 @@ describe NKnode do
     end
   end
 end
+
+describe 'NKnetwork' do
+  it 'should have nodes' do
+    tenner = NKnetwork.new(10)
+    expect(tenner.nodes.length).to eq 10
+    tenner.nodes.each {|n| expect(n).to be_a_kind_of(NKnode)}
+  end
+
+  it 'should be possible to set the wiring' do
+    three = NKnetwork.new(3)
+    three.set_wiring([[2,11], [], [9]])
+    expect(three.input_graph).to eq [[0,2,11], [1], [2,9]]
+  end
+
+  it 'should be possible to set the initial wiring to a an arbitrary graph' do
+    twelve_star = NKnetwork.new(12,[[9]]*12)
+    expect(twelve_star.input_graph).to eq [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9]]
+  end
+end
+
+
+describe 'exercising a network' do
+  it 'should produce a score' do
+    three = NKnetwork.new(3)
+    three.set_wiring([[-1,1],[0,2],[1,3]])
+    expect(three.input_graph).to eq [[0, -1, 1], [1, 0, 2], [2, 1, 3]]
+    s1 = [1,0,0]
+    vector1 = three.evaluate_state(s1)
+    s2 = [0,1,1]
+    vector2 = three.evaluate_state(s2)
+    expect(vector1).to eq vector2
+  end
+end
