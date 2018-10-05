@@ -108,14 +108,14 @@ end
 
 
 describe 'exercising a network' do
-  it 'should produce a score' do
+  it 'should produce scores' do
     three = NKnetwork.new(3)
-    three.set_wiring([[-1,1],[0,2],[1,3]])
-    expect(three.input_graph).to eq [[0, -1, 1], [1, 0, 2], [2, 1, 3]]
-    s1 = [1,0,0]
-    vector1 = three.evaluate_state(s1)
-    s2 = [0,1,1]
-    vector2 = three.evaluate_state(s2)
-    expect(vector1).to eq vector2
+    three.set_wiring([[1],[2],[3]])
+    expect(three.input_graph).to eq [[0, 1], [1, 2], [2, 3]]
+    states = [0,1].repeated_permutation(3).to_a # all possible states
+    expect(states.length).to eq 8
+    scores = states.collect {|s| three.evaluate_state(s)}
+    expect(scores.length).to eq 8
+    expect(scores.collect(&:length)).to eq [3]*8
   end
 end
