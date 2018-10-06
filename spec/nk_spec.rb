@@ -19,6 +19,11 @@ describe NKnode do
       a = NKnode.new(11,[8,2,9])
       expect(a.inputs).to eq [11,8,2,9]
     end
+
+    it "doesn't permit duplicates" do
+      a = NKnode.new(11,[11,11,12,13,11])
+      expect(a.inputs).to eq [11,12,13]
+    end
   end
 
   describe 'scores' do
@@ -102,7 +107,7 @@ describe 'NKnetwork' do
 
   it 'should be possible to set the initial wiring to a an arbitrary graph' do
     twelve_star = NKnetwork.new(12,[[9]]*12)
-    expect(twelve_star.input_graph).to eq [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9]]
+    expect(twelve_star.input_graph).to eq [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9], [10, 9], [11, 9]]
   end
 
   it 'has a helper for producing a complete network' do

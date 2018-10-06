@@ -11,7 +11,7 @@ class NKnode
   end
 
   def set_inputs(other_nodes)
-    @inputs = [@id] + other_nodes
+    @inputs = ([@id] + other_nodes).uniq
   end
 
   def score(state)
