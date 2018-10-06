@@ -109,4 +109,10 @@ class NKsearcher
       @network.nodes[index].scores[s]
     end
   end
+
+  def totalistic_sort(states)
+    states.shuffle.sort_by do |s|
+      @network.evaluate_state(s).inject(:+)
+    end
+  end
 end

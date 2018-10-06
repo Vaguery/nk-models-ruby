@@ -198,6 +198,32 @@ describe 'NKsearcher' do
     l2b = n6searcher.lexicase_sort(samples,2)
     expect(l2a).not_to eq l2b
   end
+
+  it 'can do a totalistic sort of a collection of states' do
+    n20 = NKnetwork.new(20)
+    n20.set_wiring(n20.complete_network)
+    n20searcher = NKsearcher.new(n20)
+    samples = 100.times.collect {n20searcher.random_state}
+    tots = n20searcher.totalistic_sort(samples)
+    new_order = tots.collect do |s|
+      n20searcher.network.evaluate_state(s).inject(:+)
+    end
+    expect(new_order).to eq new_order.sort
+  end
+
+  it 'shuffles the states to avoid bias from ties' do
+    n6 = NKnetwork.new(6)
+    n6searcher = NKsearcher.new(n6)
+    samples = 10.times.collect {n6searcher.random_state}
+    samples.each {|s| n6.evaluate_state(s)}
+      # fill in "actual" values in @scores hashes
+    n6.nodes.each {|n| n.scores.keys.each {|k| n.scores[k] = 999}}
+      # set every score in every node to 999
+    tots_a = n6searcher.totalistic_sort(samples)
+    tots_b = n6searcher.totalistic_sort(samples)
+    expect(tots_a).not_to eq tots_b
+  end
+
 end
 
 # describe 'trying it out' do
