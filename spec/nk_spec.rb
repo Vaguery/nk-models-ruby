@@ -104,11 +104,16 @@ describe 'NKnetwork' do
     twelve_star = NKnetwork.new(12,[[9]]*12)
     expect(twelve_star.input_graph).to eq [[0, 9], [1, 9], [2, 9], [3, 9], [4, 9], [5, 9], [6, 9], [7, 9], [8, 9], [9, 9], [10, 9], [11, 9]]
   end
+
+  it 'has a helper for producing a complete network' do
+    five = NKnetwork.new(5)
+    expect(five.complete_network).to eq [[1,2,3,4],[0,2,3,4],[0,1,3,4],[0,1,2,4],[0,1,2,3]]
+  end
 end
 
 
 describe 'exercising a network' do
-  it 'should produce scores' do
+  it 'should produce scores for states' do
     three = NKnetwork.new(3)
     three.set_wiring([[1],[2],[3]])
     expect(three.input_graph).to eq [[0, 1], [1, 2], [2, 3]]
@@ -119,3 +124,92 @@ describe 'exercising a network' do
     expect(scores.collect(&:length)).to eq [3]*8
   end
 end
+
+describe 'NKsearcher' do
+  it 'can produce a random sampled binary state' do
+    n20 = NKnetwork.new(20)
+    n20searcher = NKsearcher.new(n20)
+    s1 = n20searcher.random_state
+    expect(s1.length).to eq 20
+    expect(s1.uniq.length).to eq 2
+  end
+
+  it 'can produce a mutant' do
+    n10 = NKnetwork.new(10)
+    n10searcher = NKsearcher.new(n10)
+    s1 = [0]*10
+    s1m = n10searcher.point_mutant(s1,7)
+    expect(s1m[7]).not_to eq 0
+    s1m = n10searcher.point_mutant(s1,7,[0,99])
+    expect(s1m[7]).to eq 99
+    s1m = n10searcher.point_mutant(s1)
+    expect(n10searcher.hamming(s1,s1m)).to eq 1
+  end
+
+  it 'can produce all 1-mutant neighbors of a state' do
+    n5 = NKnetwork.new(5)
+    n5searcher = NKsearcher.new(n5)
+    s1 = [0,0,0,0,0]
+    sm = n5searcher.neighbors(s1)
+    expect(sm).to include([1,0,0,0,0],
+                          [0,1,0,0,0],
+                          [0,0,1,0,0],
+                          [0,0,0,1,0],
+                          [0,0,0,0,1]
+                          )
+  end
+
+  it 'can produce a random walk' do
+    n5 = NKnetwork.new(5)
+    n5searcher = NKsearcher.new(n5)
+    s1 = [0,0,0,0,0]
+    sm = n5searcher.mutant_walk(s1,1,10)
+    expect(sm.length).to be 10
+    (0..3).each do |idx|
+      d = n5searcher.hamming(sm[idx],sm[idx+1])
+      expect(d).to eq 1
+    end
+  end
+
+  it 'can do a lexicase sort of a collection of states' do
+    n20 = NKnetwork.new(20)
+    n20.set_wiring(n20.complete_network)
+    n20searcher = NKsearcher.new(n20)
+    samples = 100.times.collect {n20searcher.random_state}
+    l2 = n20searcher.lexicase_sort(samples,2)
+    new_order = l2.collect do |s|
+      n20searcher.network.nodes[2].scores[s]
+    end
+    expect(new_order).to eq new_order.sort
+    l13 = n20searcher.lexicase_sort(samples,13)
+    l13_order = l13.collect {|s|
+      n20searcher.network.nodes[13].scores[s]}
+    expect(new_order).not_to eq l13_order
+    expect(l13_order.sort).to eq l13_order
+  end
+
+  it 'shuffles the states first to avoid bias from ties' do
+    n6 = NKnetwork.new(6) #unconnected
+    n6searcher = NKsearcher.new(n6)
+    samples = 10.times.collect {n6searcher.random_state}
+    samples.each {|s| n6.nodes[2].scores[s] = 999}
+      # set every salient score to the same number
+    l2a = n6searcher.lexicase_sort(samples,2)
+    l2b = n6searcher.lexicase_sort(samples,2)
+    expect(l2a).not_to eq l2b
+  end
+end
+
+# describe 'trying it out' do
+#   it 'works for biggish systems' do
+#     n = 200
+#     nkn = NKnetwork.new(n)
+#     net = (0..n-1).collect {|i| ((0..n-1).to_a - [i]).sample(1)}
+#     nkn.set_wiring(net)
+#     bigSearcher = NKsearcher.new(nkn)
+#     s1 = [0]*n
+#     guesses = 100.times.collect {bigSearcher.random_state}
+#     scores =  guesses.collect {|s| bigSearcher.network.evaluate_state(s)}
+#     # puts scores.collect {|s| s.inject(:+)}
+#   end
+# end
